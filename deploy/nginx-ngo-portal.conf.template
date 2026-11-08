@@ -1,0 +1,26 @@
+# nginx site for the NGO portal API. Rendered by sed, see DEPLOY.md step 7.
+# __API_DOMAIN__ and __PORT__ are replaced when you generate the real file.
+
+server {
+    listen 80;
+    server_name __API_DOMAIN__;
+    return 301 https://$host:10061$request_uri;
+}
+
+server {
+    listen 443 ssl;
+    server_name __API_DOMAIN__;
+
+    ssl_certificate /etc/letsencrypt/live/__API_DOMAIN__/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/__API_DOMAIN__/privkey.pem;
+
+    location / {
+        proxy_pass http://localhost:__PORT__;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        # The portal needs these two: login rate limits and the Activity log use the real visitor IP.
+        # Without X-Forwarded-For every user would look like 127.0.0.1 and share one rate limit.
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}

@@ -1,0 +1,3 @@
+# Netlify serves only the static frontend folder. No build step.
+[build]
+  publish = "frontend"
